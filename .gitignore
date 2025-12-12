@@ -37,3 +37,5 @@ mta_archives/
 build/ui-deployer/
 build/dist/
 env/
+app/riskmanagement.risks/dist-zip/
+app/riskmanagement.risks/dist/
