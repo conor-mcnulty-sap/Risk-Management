@@ -1,3 +1,4 @@
+
 {
   "welcomeFile": "/index.html",
   "authenticationMethod": "route",
@@ -11,6 +12,13 @@
       "target": "/service/RiskManagementService/$1",
       "destination": "RiskManagement-app-srv",
       "authenticationType": "xsuaa"
+    },
+    {
+      "source": "^/sap/opu/odata/sap/API_BUSINESS_PARTNER/(.*)$",
+      "target": "/sap/opu/odata/sap/API_BUSINESS_PARTNER/$1",
+      "destination": "apihub_sandbox",
+      "authenticationType": "none",
+      "csrfProtection": false
     },
     {
       "source": "^/index.html$",
@@ -32,6 +40,12 @@
       "service": "html5-apps-repo-rt",
       "cacheControl": "no-cache, must-revalidate",
       "authenticationType": "xsuaa"
+    }
+  ],
+  "responseHeaders": [
+    {
+      "name": "Content-Security-Policy",
+      "value": "frame-ancestors 'self' *.hana.ondemand.com *applicationstudio.cloud.sap"
     }
   ]
 }

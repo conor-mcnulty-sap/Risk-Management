@@ -5,7 +5,7 @@ description: A simple CAP project.
 parameters:
   deploy_mode: html5-repo
   enable-parallel-deployments: true
-  subdomain: e25a661btrial
+  subdomain: coeireland-poc
 build-parameters:
   before-all:
     - builder: custom
@@ -14,6 +14,8 @@ build-parameters:
         - mkdir -p build/dist
         - rm -rf build/ui-deployer
         - mkdir -p build/ui-deployer
+        - mkdir -p build/ui-deployer/resources
+        - cp workzone/cdm.json build/ui-deployer/resources/cdm.json
     - builder: custom
       commands:
         - npm install --production
@@ -84,21 +86,30 @@ modules:
         subaccount:
           existing_destinations_policy: update
           destinations:
+            # Add this new destination for API Hub
+            - Name: apihub_sandbox
+              Description: SAP API Business Hub - Sandbox
+              URL: https://sandbox.api.sap.com/s4hanacloud
+              Type: HTTP
+              ProxyType: Internet
+              Authentication: NoAuthentication
+              HTML5.DynamicDestination: true
+              WebIDEEnabled: true
+              WebIDEUsage: odata_gen
             - Authentication: OAuth2UserTokenExchange
               Name: RiskManagement-service-uaa
               ServiceInstanceName: RiskManagement-uaa
               ServiceKeyName: RiskManagement-uaa-key
               sap.cloud.service: lcap.RiskManagement
-            - Authentication: OAuth2UserTokenExchange
-              Name: RiskManagement-app-srv
-              TokenServiceInstanceName: RiskManagement-uaa
-              TokenServiceKeyName: RiskManagement-uaa-key
-              URL: ~{srv-api/srv-url}
-              sap.cloud.service: lcap.RiskManagement
             - Name: RiskManagement-service-html5-apps-repo-host
               ServiceInstanceName: RiskManagement-html5-apps-repo-host
               ServiceKeyName: RiskManagement-html5-apps-repo-host-key
               sap.cloud.service: lcap.RiskManagement
+            - Name: RiskManagement-html5-content-dt
+              ServiceInstanceName: RiskManagement-html5-apps-repo-runtime
+              ServiceKeyName: RiskManagement-html5-apps-repo-runtime-key
+              URL: >-
+                https://html5-apps-repo-rt.${default-domain}/applications/cdm/lcap.RiskManagement
             - Authentication: OAuth2UserTokenExchange
               Name: RiskManagement-RiskManagementService
               TokenServiceInstanceName: RiskManagement-uaa
@@ -124,6 +135,10 @@ modules:
         parameters:
           service-key:
             name: RiskManagement-html5-apps-repo-host-key
+      - name: RiskManagement-service-html5-apps-repo-runtime
+        parameters:
+          service-key:
+            name: RiskManagement-html5-apps-repo-runtime-key
       - name: RiskManagement-service-destination
         parameters:
           content-target: true
@@ -156,7 +171,15 @@ modules:
           artifacts:
             - launchpad.zip
           target-path: resources
+    parameters:
+      config:
+        destinations:
+          - forwardAuthToken: true
+            name: RiskManagement-app-srv
+            url: ~{srv-api/srv-url}
     requires:
+      - name: srv-api
+      - name: RiskManagement-service-uaa
       - name: RiskManagement-service-html5-apps-repo-host
         parameters:
           content-target: true
@@ -199,8 +222,17 @@ resources:
       service-plan: lite
       service-name: RiskManagement-destination
       config:
-        HTML5Runtime_enabled: true
         version: 1.0.0
+        init_data:
+          subaccount:
+            destinations:
+              - Name: RiskManagement-html5-content-rt
+                Authentication: NoAuthentication
+                ProxyType: Internet
+                Type: HTTP
+                URL: https://${subdomain}.launchpad.${default-domain}
+                CEP.HTML5contentprovider: true
+            existing_destinations_policy: update
   - type: org.cloudfoundry.user-provided-service
     name: RiskManagement-service-metadata
     parameters:
@@ -227,3 +259,9 @@ resources:
       service: html5-apps-repo
       service-plan: app-host
       service-name: RiskManagement-html5-apps-repo-host
+  - type: org.cloudfoundry.managed-service
+    name: RiskManagement-service-html5-apps-repo-runtime
+    parameters:
+      service: html5-apps-repo
+      service-plan: app-runtime
+      service-name: RiskManagement-html5-apps-repo-runtime

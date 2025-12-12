@@ -38,15 +38,14 @@
   "cds": {
     "requires": {
       "[production]": {
-        "db": "hana",
-        "auth": "xsuaa"
+        "db": "hana"
       },
       "auth": {
         "[development]": {
           "kind": "dummy"
         },
         "[production]": {
-          "kind": "xsuaa"
+          "kind": "dummy"
         }
       },
       "BusinessPartnerA2X": {
