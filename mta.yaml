@@ -5,7 +5,7 @@ description: A simple CAP project.
 parameters:
   deploy_mode: html5-repo
   enable-parallel-deployments: true
-  subdomain: coeireland-poc
+  subdomain:  e25a661btrial-ga
 build-parameters:
   before-all:
     - builder: custom
